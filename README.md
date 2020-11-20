@@ -24,10 +24,3 @@
 | 8    |  normalized    |
 | 9    |  StopWordsCleaner    |
 | 10   |  lemmatizer    |
-| 11   |  Array[String]    |
-| 12   |  String    |
-| 13   |  Date    |
-| 14   |  Integer    |
-| 15   |  String    |
-| 16   |  String    |
-
