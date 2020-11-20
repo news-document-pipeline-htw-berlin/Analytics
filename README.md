@@ -24,3 +24,14 @@
 | 8    |  normalized    |
 | 9    |  StopWordsCleaner    |
 | 10   |  lemmatizer    |
+
+>_id = unique Hash to identify a single article \
+>text = body of the article \
+>sentence = text split into an array of sentences \
+>token = sentences split into tokens (may contain duplicated) \
+>embeddings = ???\
+>ner = named entities and their predicted category (PERson, LOCation, ORGanisation, MISCellaneous)  \
+>normalized = tokens without punctuation, pointing to the sentence they occurred in\
+>StopWordCleaner = tokens without punctuation + stopwords were removed - still pointing to the sentence they occurred in\
+>lemmatizer = content of "StopWordCleaner" but tokens are reduced to their root/neutral form\
+
