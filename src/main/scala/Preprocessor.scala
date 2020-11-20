@@ -54,7 +54,6 @@ class Preprocessor {
       .setInputCols(Array("token"))
       .setOutputCol("normalized")
       .setLowercase(false)
-    //.setCleanupPatterns(["[^!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~\\w\\d\\s]"])
 
     val stopWords = StopWordsCleaner.pretrained("stopwords_de", "de")
       .setInputCols("normalized")
@@ -69,30 +68,18 @@ class Preprocessor {
       .setOutputCol("stemmer")
       .setLanguage("German")
 
-
     val doce = documentDF.transform(dataDF)
-    val sentence = sentenceDetector.transform(doce)
-    val tokens = tokenizer.fit(sentence).transform(sentence)
+    val pipeline = PretrainedPipeline("entity_recognizer_md", "de")
+    val entity_analyse  =pipeline.transform(doce)
+
+
+
+    val tokens = entity_analyse.select("_id" ,"token")
     val normalize = normalizer.fit(tokens).transform(tokens)
     val cTokens = stopWords.transform(normalize)
-    val lemma = lemmer.transform(cTokens)
-    val stem = stemmer.transform(cTokens)
+    val lemma = lemmer.transform(cTokens).drop("token")
+    val preprocessData = entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
 
-
-
-    val pipeline = PretrainedPipeline("entity_recognizer_md", "de")
-    val sent  =pipeline.transform(doce)
-
-    val pipeline1 = PretrainedPipeline("entity_recognizer_md", "de")
-    val sent1  =pipeline1.transform(doce)
-    //val pipeline = PipelineModel.load("/Users/dennislehmann/Documents/HTW_Studium/Semester5/Projekt/explain_document_lg_de_2")
-    //val  temp =pipeline.transform(dataDF)
-    //temp.show()
-
-
-    //lemma.show()
-    //sent.select("embeddings").show(truncate = false)
-    sent.show()
   }
 
 }
