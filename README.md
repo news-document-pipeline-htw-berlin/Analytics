@@ -33,5 +33,5 @@
 >ner = named entities and their predicted category (PERson, LOCation, ORGanisation, MISCellaneous)  \
 >normalized = tokens without punctuation, pointing to the sentence they occurred in\
 >StopWordCleaner = tokens without punctuation + stopwords were removed - still pointing to the sentence they occurred in\
->lemmatizer = content of "StopWordCleaner" but tokens are reduced to their root/neutral form\
+>lemmatizer = content of "StopWordCleaner" but tokens are reduced to their root/neutral form
 
