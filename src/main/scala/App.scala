@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import com.johnsnowlabs.nlp.SparkNLP
+
 object App {
 
 
@@ -29,7 +30,8 @@ object App {
     val writeConfig = DBConnector.createWriteConfig(outputUri, sparkSession = spark)
     val mongoData = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfig)
     val preprocessor = new Preprocessor()
-    preprocessor.run_pp(mongoData)
+    val sentimentAnalysis = new SentimentAnalysis(spark)
+    sentimentAnalysis.analyseSentens(preprocessor.run_pp(mongoData))
 
   }
 }

@@ -1,8 +1,12 @@
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class SentimentAnalysis(sentPath: String) {
+import scala.collection.mutable
 
- val sentiments: Map[String, Double] = fileLoader(sentPath)
+class SentimentAnalysis(spark: SparkSession) {
+ import spark.implicits._
+
+
+ val sentiments: Map[String, Double] = fileLoader("SentimentMerged.txt")
 
  def fileLoader(path: String): Map[String, Double] ={
   val url = getClass.getResource("/" + path).getPath
@@ -27,13 +31,11 @@ class SentimentAnalysis(sentPath: String) {
      .toMap
  }
 
- def analyseSentens(data: DataFrame): DataFrame ={
-//  val analyse = new SentimentAnalysis("SentimentMerged.txt")
-//  analyse.analyseSentens(data)
 
-  data.
+ def analyseSentens(data: DataFrame):Unit ={
+ val sentiments_ = sentiments
 
-    map(x => sentiments.getOrElse(x,0.0)).sum
-
+ val sum =data.select("lemmatizer.result").map(x => x.getAs[mutable.WrappedArray[String]](0).map(y => sentiments_.getOrElse(y, 0.0)).sum)
+  //sum.foreach(x => println(x))
  }
 }

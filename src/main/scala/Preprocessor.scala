@@ -4,7 +4,7 @@ import com.johnsnowlabs.nlp.annotators._
 import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 
 
 class Preprocessor {
@@ -37,7 +37,7 @@ class Preprocessor {
    *
    * @param data (key-value structure, build by the method "getTextandID")
    */
-  def preprocessArticles(data: RDD[(String, String)]): Unit = {
+  def preprocessArticles(data: RDD[(String, String)]): DataFrame = {
     //converting the RDD into a dataframe
     val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text")
 
@@ -54,12 +54,12 @@ class Preprocessor {
 
     //further splitting of the sentences into tokens
     val tokenizer = new Tokenizer()
-      .setInputCols(Array("sentence"))
+      .setInputCols("sentence")
       .setOutputCol("token")
 
     //removing punctuation, numbers and "dirty" characters
     val normalizer = new Normalizer()
-      .setInputCols(Array("token"))
+      .setInputCols("token")
       .setOutputCol("normalized")
       .setLowercase(false)
 
@@ -70,7 +70,7 @@ class Preprocessor {
 
     //lemmatizing words -> e.g. reducing words to their root / neutral form
     val lemmatized = LemmatizerModel.pretrained(name = "lemma", lang = "de")
-      .setInputCols(Array("StopWordsCleaner"))
+      .setInputCols("StopWordsCleaner")
       .setOutputCol("lemmatizer")
 
     val doc = documentDF.transform(dataDF)
@@ -85,6 +85,7 @@ class Preprocessor {
     val lemma = lemmatized.transform(cTokens).drop("token")
 
     //merging NER and preprocessing results into a single Dataframe to be returned
-    val preprocessData = entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
+    entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
+
   }
 }
