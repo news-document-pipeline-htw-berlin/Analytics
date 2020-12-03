@@ -1,5 +1,5 @@
-var line1 = "Abmachung|NN	0.0040	Abmachungen"
-var line2 =   "Abschluß|NN	0.0040	Abschlüße,Abschlußs,Abschlußes,Abschlüßen"
+var line1 = "Abmachung|NNXY	0.0040	Abmachungen"
+var line2 =   "Abschluß|NNXY	0.0040	Abschlüße,Abschlußs,Abschlußes,Abschlüßen"
 var line3 = "Abstimmung|NN	0.0040	Abstimmungen"
 var line4 = "Agilität|NN	0.0040 geschlossenen"
 var line5 = "Aktivität|NN	0.0040	Aktivitäten"
@@ -8,7 +8,7 @@ var listOfLines = List(line1,line2,line3,line4,line5)
 
 val sentimentMap =
   listOfLines
-    .map{x => x.replaceAll("\\|[A-Z][A-Z]\\s"," ")}
+    .map{x => x.replaceAll("\\|[A-Z]*\\s"," ")}
     .map{x => x.replaceAll(","," ")}
     .map{x => x.split("\\s")}
     .map{x => (x(0),x(1),x.tail.tail)}

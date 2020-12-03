@@ -15,7 +15,7 @@ class Sentiment_Analysis(sentPath: String) {
 
  def sentimentListToMap(input: List[String]): Map[String,Double] ={
   input
-     .map{x => x.replaceAll("\\|[A-Z][A-Z]\\s"," ")}
+     .map{x => x.replaceAll("\\|[A-Z]*\\s"," ")}
      .map{x => x.replaceAll(","," ")}
      .map{x => x.split("\\s")}
      .map{x => (x(0),x(1),x.tail.tail)}
