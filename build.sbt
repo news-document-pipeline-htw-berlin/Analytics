@@ -1,4 +1,4 @@
-name := "spark_nlp"
+name := "Analytics"
 
 version := "0.1"
 
