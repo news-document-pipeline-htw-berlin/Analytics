@@ -6,7 +6,7 @@ var line5 = "Aktivität|NN	0.0040	Aktivitäten"
 
 var listOfLines = List(line1,line2,line3,line4,line5)
 
-val sentimentMap =
+val sentimentMap:Map[String,Double] =
   listOfLines
     .map{x => x.replaceAll("\\|[A-Z]*\\s"," ")}
     .map{x => x.replaceAll(","," ")}
@@ -28,4 +28,4 @@ testString
   .replaceAll("\\.","")
   .split("\\s")
 
-testTextAsList.map(x => sentimentMap.getOrElse(x,0))
+testTextAsList.map(x => sentimentMap.getOrElse(x,0.0)).sum
