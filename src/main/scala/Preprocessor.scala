@@ -1,6 +1,7 @@
 import com.johnsnowlabs.nlp.DocumentAssembler
 import com.johnsnowlabs.nlp.annotator.SentenceDetector
 import com.johnsnowlabs.nlp.annotators._
+import com.johnsnowlabs.nlp.annotators.keyword.yake.YakeModel
 import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
 import org.apache.spark.rdd.RDD
@@ -13,11 +14,11 @@ class Preprocessor {
    *
    * @param data = crawled article
    */
-  def run_pp(data: RDD[Row]) = {
+  def run_pp(data: RDD[Row]):DataFrame = {
     // Zieht sich ein Datensatz aus der Row.
-    val f=data.first()
-    val daters = data.filter(x => x==f )
-    val textsList = getTextAndAssociatedID(daters)
+    //val f=data.first()
+    //val daters =
+    val textsList = getTextAndAssociatedID(data)
     preprocessArticles(textsList)
   }
 
@@ -37,9 +38,9 @@ class Preprocessor {
    *
    * @param data (key-value structure, build by the method "getTextandID")
    */
-  def preprocessArticles(data: RDD[(String, String)]): DataFrame = {
+  def preprocessArticles(data: RDD[(String, String)]):DataFrame= {
     //converting the RDD into a dataframe
-    val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text")
+    val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
 
     //src: https://github.com/JohnSnowLabs/spark-nlp
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
@@ -73,6 +74,13 @@ class Preprocessor {
       .setInputCols("StopWordsCleaner")
       .setOutputCol("lemmatizer")
 
+    val keywords = new YakeModel()
+      .setInputCols("lemmatizer")
+      .setOutputCol("keywords")
+      .setMinNGrams(1)
+      .setMaxNGrams(1)
+      .setNKeywords(5)
+
     val doc = documentDF.transform(dataDF)
 
     //performing NER
@@ -83,9 +91,12 @@ class Preprocessor {
     val normalize = normalizer.fit(tokens).transform(tokens)
     val cTokens = stopWords.transform(normalize)
     val lemma = lemmatized.transform(cTokens).drop("token")
+    val keyword = keywords.transform(lemma)
 
     //merging NER and preprocessing results into a single Dataframe to be returned
     entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
 
+    //entity_analyse.printSchema
+    //keyword.select("_id","keywords.result").show(truncate = false)
   }
 }

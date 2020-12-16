@@ -32,10 +32,11 @@ class SentimentAnalysis(spark: SparkSession) {
  }
 
 
- def analyseSentens(data: DataFrame):Unit ={
+ def analyseSentens(data: DataFrame):DataFrame ={
  val sentiments_ = sentiments
 
- val sum =data.select("lemmatizer.result").map(x => x.getAs[mutable.WrappedArray[String]](0).map(y => sentiments_.getOrElse(y, 0.0)).sum)
-  //sum.foreach(x => println(x))
+ val sum =data.select("lemmatizer.result", "_id").map(x => ( x.getAs[String](1),x.getAs[mutable.WrappedArray[String]](0)
+   .map(y => sentiments_.getOrElse(y, 0.0)).sum)).toDF("_id", "sentimens")
+  data.join(sum,  Seq("_id"), joinType = "outer"  )
  }
 }

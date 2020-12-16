@@ -1,7 +1,11 @@
 import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.{ReadConfig, WriteConfig}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.{DataTypes, FloatType, StringType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+
+import scala.reflect.internal.util.NoPosition.source
 
 object DBConnector {
 
@@ -50,7 +54,10 @@ object DBConnector {
    */
 
   def writeToDB(savedInstance: DataFrame, writeConfig: WriteConfig): Unit = {
-    MongoSpark.save(savedInstance, writeConfig)
+    //val newDf = savedInstance.select(savedInstance.columns.map(c => col(c).cast(StringType)) : _*)
+    val columnName = Seq("_id", "text", "entities", "lemmatizer", "sentimens")
+    val newDf =savedInstance.select("_id", "text", "entities.result", "lemmatizer.result", "sentimens").toDF(columnName: _*)
+    MongoSpark.save(newDf, writeConfig)
   }
 
 }
