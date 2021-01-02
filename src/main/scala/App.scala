@@ -51,5 +51,6 @@ object App {
     val sentimentAnalysis = new SentimentAnalysis(spark)
     val data_sentimentAnalysis = sentimentAnalysis.analyseSentens(preprocessor.run_pp(new_data))
     DBConnector.writeToDB(data_sentimentAnalysis,writeConfig)
+
   }
 }
