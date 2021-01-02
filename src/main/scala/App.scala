@@ -43,5 +43,6 @@ object App {
     val keywords = new Key_Words()
    //keywords.tf_idf(data_sentimentAnalysis)
     DBConnector.writeToDB(data_sentimentAnalysis,writeConfig)
+
   }
 }

@@ -96,6 +96,7 @@ class Preprocessor {
     //merging NER and preprocessing results into a single Dataframe to be returned
     entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
 
+
     //entity_analyse.printSchema
     //keyword.select("_id","keywords.result").show(truncate = false)
   }
