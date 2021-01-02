@@ -1,3 +1,5 @@
+import java.sql.Timestamp
+
 import com.johnsnowlabs.nlp.DocumentAssembler
 import com.johnsnowlabs.nlp.annotator.SentenceDetector
 import com.johnsnowlabs.nlp.annotators._
@@ -6,6 +8,7 @@ import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
+import org.joda.time.DateTime
 
 
 class Preprocessor {
@@ -14,12 +17,11 @@ class Preprocessor {
    *
    * @param data = crawled article
    */
-  def run_pp(data: RDD[Row]):DataFrame = {
+  def run_pp(data: DataFrame):DataFrame = {
     // Zieht sich ein Datensatz aus der Row.
     //val f=data.first()
     //val daters =
-    val textsList = getTextAndAssociatedID(data)
-    preprocessArticles(textsList)
+    preprocessArticles(data)
   }
 
   /** helper method, extracting text body and associated ID
@@ -27,8 +29,24 @@ class Preprocessor {
    * @param data = crawled article(s)
    * @return key-value pairs ID -> text-body
    */
-  def getTextAndAssociatedID(data: RDD[Row]): RDD[(String, String)] = {
-    data.map(x => (x.get(0).toString, x.getString(15)))
+  def getRawDataFrame(data: RDD[Row]): DataFrame = {
+    val data_raw=data.map(x => (
+      x.get(0).toString,
+      x.getAs[Array[String]](1),
+      x.get(2).asInstanceOf[Timestamp],
+      x.get(8).toString,
+      x.get(11).toString,
+      x.get(9).toString,
+      x.get(13).toString,
+      x.get(3).asInstanceOf[String],
+      x.get(5).asInstanceOf[String],
+      x.get(12).toString,
+      x.getAs[Array[String]](6),
+      x.get(10).asInstanceOf[Timestamp],
+      x.getAs[Array[String]](4),
+      x.getAs[Array[String]](7)))
+    spark.createDataFrame(data_raw.collect()).toDF("_id","authors", "crawl_time", "longUrl","short_url",
+      "news_site", "title", "description", "intro","text", "keywords_given", "published_time", "image_links", "links").limit(3)
   }
 
   /** this method will perform several operations of preprocessing on the incoming text(body),
@@ -38,12 +56,13 @@ class Preprocessor {
    *
    * @param data (key-value structure, build by the method "getTextandID")
    */
-  def preprocessArticles(data: RDD[(String, String)]):DataFrame= {
+  def preprocessArticles(data: DataFrame):DataFrame= {
     //converting the RDD into a dataframe
-    val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
-
+    //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
     //src: https://github.com/JohnSnowLabs/spark-nlp
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
+
+    data.count()
     val documentDF = new DocumentAssembler()
       .setInputCol("text")
       .setOutputCol("document")
@@ -76,12 +95,12 @@ class Preprocessor {
 
     val keywords = new YakeModel()
       .setInputCols("lemmatizer")
-      .setOutputCol("keywords")
+      .setOutputCol("keywords_extracted")
       .setMinNGrams(1)
       .setMaxNGrams(1)
       .setNKeywords(5)
 
-    val doc = documentDF.transform(dataDF)
+    val doc = documentDF.transform(data)
 
     //performing NER
     val pipeline = PretrainedPipeline("entity_recognizer_md", "de")
@@ -94,7 +113,7 @@ class Preprocessor {
     val keyword = keywords.transform(lemma)
 
     //merging NER and preprocessing results into a single Dataframe to be returned
-    entity_analyse.join(lemma, Seq("_id"), joinType = "outer"  )
+    entity_analyse.join(keyword, Seq("_id"), joinType = "outer"  )
 
     //entity_analyse.printSchema
     //keyword.select("_id","keywords.result").show(truncate = false)
