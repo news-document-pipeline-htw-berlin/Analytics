@@ -31,7 +31,7 @@ object App {
       .getOrCreate()
 
     val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
-    val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput).limit(501)
+    val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
     val ordersReadConfig = ReadConfig(Map("collection"->"articles_analytics"), Some(ReadConfig(spark)))
     val mongoDataAnalysis = DBConnector.readFromDB(sparkSession = spark, readConfig = ordersReadConfig).select("_id")
     val writeConfig = DBConnector.createWriteConfig(outputUri, sparkSession = spark, mode = "append")
@@ -40,9 +40,11 @@ object App {
     val sentimentAnalysis = new SentimentAnalysis(spark)
     val data_sentimentAnalysis = sentimentAnalysis.analyseSentens(preprocessor.run_pp(new_data))
 
-    val simpleTextSum = new SimpleTextSum(spark)
+
+    val text_sum_From_Full_Article = new TextSumFromFullArticle(spark)
     //val data_Analysis=simpleTextSum.applyGetTopSentences(data_sentimentAnalysis)
     //data_Analysis.show(false)
+
 
     DBConnector.writeToDB(data_sentimentAnalysis, writeConfig)
 
