@@ -1,3 +1,4 @@
+import com.mongodb.spark.sql.fieldTypes.ObjectId
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
@@ -34,9 +35,9 @@ class SentimentAnalysis(spark: SparkSession) {
 
  def analyseSentens(data: DataFrame):DataFrame ={
  val sentiments_ = sentiments
-
- val sum =data.select("lemmatizer.result", "_id").map(x => ( x.getAs[String](1),x.getAs[mutable.WrappedArray[String]](0)
-   .map(y => sentiments_.getOrElse(y, 0.0)).sum)).toDF("_id", "sentimens")
-  data.join(sum,  Seq("_id"), joinType = "outer"  )
+ val sum =data.select("lemmatizer.result", "long_url").map(x => ( x.getAs[String](1),x.getAs[mutable.WrappedArray[String]](0)
+   .map(y => sentiments_.getOrElse(y, 0.0)).sum)).toDF("long_url", "sentimens")
+  //sum.show()
+  data.join(sum,  Seq("long_url"), joinType = "outer"  )
  }
 }

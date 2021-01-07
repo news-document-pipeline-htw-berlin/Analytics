@@ -46,7 +46,7 @@ class Preprocessor {
       x.getAs[Array[String]](4),
       x.getAs[Array[String]](7)))
     spark.createDataFrame(data_raw.collect()).toDF("_id","authors", "crawl_time", "longUrl","short_url",
-      "news_site", "title", "description", "intro","text", "keywords_given", "published_time", "image_links", "links").limit(3)
+      "news_site", "title", "description", "intro","text", "keywords_given", "published_time", "image_links", "links").limit(10)
   }
 
   /** this method will perform several operations of preprocessing on the incoming text(body),
@@ -62,7 +62,6 @@ class Preprocessor {
     //src: https://github.com/JohnSnowLabs/spark-nlp
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
 
-    data.count()
     val documentDF = new DocumentAssembler()
       .setInputCol("text")
       .setOutputCol("document")

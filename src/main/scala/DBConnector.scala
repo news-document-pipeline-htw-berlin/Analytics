@@ -41,12 +41,12 @@ object DBConnector {
     Reads the MongoDB specified in readConfig and returns it as RDD[Row]
    */
 
-  def readFromDB(sparkSession: SparkSession, readConfig: ReadConfig): RDD[Row] = {
-    val rdd = MongoSpark.load(sparkSession, readConfig).rdd
-    if (rdd.isEmpty())
+  def readFromDB(sparkSession: SparkSession, readConfig: ReadConfig): DataFrame = {
+    val df = MongoSpark.load(sparkSession, readConfig)
+    if (df.head(1).isEmpty) {
       throw new IllegalArgumentException("Empty DB")
-    else
-      rdd
+    }
+    df
   }
 
   /*
@@ -55,10 +55,10 @@ object DBConnector {
 
   def writeToDB(savedInstance: DataFrame, writeConfig: WriteConfig): Unit = {
     //val newDf = savedInstance.select(savedInstance.columns.map(c => col(c).cast(StringType)) : _*)
-    val columnName = Seq("_id", "text", "entities", "lemmatizer", "sentimens", "keywords_extracted",  "authors", "crawl_time", "longUrl","short_url",
-      "news_site", "title", "description", "intro", "keywords_given", "published_time", "image_links", "links")
-    val newDf =savedInstance.select("_id", "text", "entities.result", "lemmatizer.result", "sentimens", "keywords_extracted.result", "authors", "crawl_time", "longUrl","short_url",
-      "news_site", "title", "description", "intro", "keywords_given", "published_time", "image_links", "links").toDF(columnName: _*)
+    val columnName = Seq("_id", "text", "entities", "lemmatizer", "sentimens", "keywords_extracted",  "authors", "crawl_time", "long_url","short_url",
+      "news_site", "title", "description", "intro", "keywords", "published_time", "image_links", "links")
+    val newDf =savedInstance.select("_id", "text", "entities.result", "lemmatizer.result", "sentimens", "keywords_extracted.result", "authors", "crawl_time", "long_url","short_url",
+      "news_site", "title", "description", "intro", "keywords", "published_time", "image_links", "links").toDF(columnName: _*)
     MongoSpark.save(newDf, writeConfig)
   }
 

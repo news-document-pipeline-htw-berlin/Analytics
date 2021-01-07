@@ -5,15 +5,16 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import com.johnsnowlabs.nlp.SparkNLP
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
+import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.catalyst.dsl.expressions.{DslExpression, StringToAttributeConversionHelper}
 import org.apache.spark.sql.functions.{col, schema_of_json}
-import org.apache.spark.sql.types.{DoubleType, FloatType, StructField}
+import org.apache.spark.sql.types.{DoubleType, FloatType, StringType, StructField}
 
 object App {
 
 
   def joinDataFrames(frame1: DataFrame, frame2: DataFrame): DataFrame = {
-    frame1.join(frame2, Seq("_id"))
+    frame1.join(frame2, Seq("_id"), "left_anti")
   }
 
 
@@ -30,27 +31,20 @@ object App {
       .getOrCreate()
 
     val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
-    val readConfigOutput = DBConnector.createReadConfig(outputUri, spark)
-    val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
-    val mongoDataAnalysis = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigOutput)
-    //mongoDataCrawler.toDF()
-    //val newDATA = mongoDataAnalysis.map(x =>mongoDataCrawler.map(y => y.get(0)) x.get(0) )
-    //val size = newDATA.count()
-
-    //val newDATA = mongoDataCrawler.subtract(mongoDataAnalysis)
-
+    val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput).limit(501)
+    val ordersReadConfig = ReadConfig(Map("collection"->"articles_analytics"), Some(ReadConfig(spark)))
+    val mongoDataAnalysis = DBConnector.readFromDB(sparkSession = spark, readConfig = ordersReadConfig).select("_id")
     val writeConfig = DBConnector.createWriteConfig(outputUri, sparkSession = spark, mode = "append")
-    //TODO abgleichen der dDB ob schon der Artikle Prozesiert wurde
     val preprocessor = new Preprocessor()
-    val rawData = preprocessor.getRawDataFrame(mongoDataCrawler)
-    val data_analysis_id_rdd = mongoDataAnalysis.map(x => (x.get(0).toString, x.get(0).toString))
-    val data_analysis_id_df = spark.createDataFrame(data_analysis_id_rdd.collect()).toDF("_id", "_id2")
-    val new_data =rawData.join(data_analysis_id_df, Seq("_id"), joinType= "left_semi")
-    new_data.show
-    //val new_data= rawData.filter(!(col("_id").isin(data_analysis_id_list:_*) or col("_id").isNull)).toDF
+    val new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis)
     val sentimentAnalysis = new SentimentAnalysis(spark)
     val data_sentimentAnalysis = sentimentAnalysis.analyseSentens(preprocessor.run_pp(new_data))
-    DBConnector.writeToDB(data_sentimentAnalysis,writeConfig)
+
+    val simpleTextSum = new SimpleTextSum(spark)
+    //val data_Analysis=simpleTextSum.applyGetTopSentences(data_sentimentAnalysis)
+    //data_Analysis.show(false)
+
+    DBConnector.writeToDB(data_sentimentAnalysis, writeConfig)
 
   }
 }
