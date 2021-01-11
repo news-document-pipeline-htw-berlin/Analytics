@@ -49,6 +49,10 @@ object DBConnector {
     df
   }
 
+  def readFromDBAnalyst(sparkSession: SparkSession, readConfig: ReadConfig): DataFrame = {
+    MongoSpark.load(sparkSession, readConfig)
+  }
+
   /*
     Saves a dataframe to db specified in writeConfig
    */
