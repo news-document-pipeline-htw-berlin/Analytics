@@ -36,7 +36,7 @@
 + _id                 = unique Hash to identify a single article 
 + authors             = an array containing the authors
 + crawl_time          = time-spamp informing when the article was crawled
-+ description         = ???
++ description         = summery of the text, written by the author
 + entities            = named entities and their predicted category (PERson, LOCation, ORGanisation, MISCellaneous)
 + image_links         = an array, containing the links of the images used in the article
 + intro               = introduction text 
@@ -45,7 +45,7 @@
 + lemmatizer          = content of "StopWordCleaner", but tokens are reduced to their root/neutral form
 + links               = an array, containing the links used in the article
 + long_url            = the complete URL of the article
-+ news_site           = ???
++ news_site           = name of the source
 + published_time      = time-stamp informing the article was published
 + read_time           = estimated read time for the article
 + sentiments          = calculated sentiment value for a given text
