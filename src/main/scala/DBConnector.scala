@@ -33,8 +33,12 @@ object DBConnector {
    */
 
   def createWriteConfig(outputUri: String, replaceDocument: String = "false", mode: String = "overwrite", sparkSession: SparkSession): WriteConfig = {
-    WriteConfig(Map("spark.mongodb.output.uri" -> outputUri, "replaceDocument" -> replaceDocument, "mode" -> mode), Some(WriteConfig(sparkSession)))
-
+    WriteConfig(Map(
+      "spark.mongodb.output.uri" -> outputUri,
+      "replaceDocument" -> replaceDocument,
+      "mode" -> mode),
+      Some(WriteConfig(sparkSession))
+    )
   }
 
   /*
@@ -58,11 +62,50 @@ object DBConnector {
    */
 
   def writeToDB(savedInstance: DataFrame, writeConfig: WriteConfig): Unit = {
-    val columnName = Seq("_id", "text", "entities", "lemmatizer", "sentimens", "keywords_extracted",  "authors", "crawl_time", "long_url","short_url",
-      "news_site", "title", "description", "intro", "keywords", "published_time", "image_links", "links", "read_time")
-    val newDf =savedInstance.select("_id", "text", "entities.result", "lemmatizer.result", "sentimens", "keywords_extracted.result", "authors", "crawl_time", "long_url","short_url",
-      "news_site", "title", "description", "intro", "keywords", "published_time", "image_links", "links", "read_time").toDF(columnName: _*)
+    val columnName = Seq(
+      "_id",
+      "text",
+      "entities",
+      "lemmatizer",
+      "sentiments",
+      "keywords_extracted",
+      "authors", "crawl_time",
+      "long_url",
+      "short_url",
+      "news_site",
+      "title",
+      "description",
+      "intro",
+      "keywords",
+      "published_time",
+      "image_links",
+      "links",
+      "read_time"
+    )
+
+    val newDf = savedInstance
+      .select(
+        "_id",
+        "text",
+        "entities.result",
+        "lemmatizer.result",
+        "sentimens",
+        "keywords_extracted.result",
+        "authors",
+        "crawl_time",
+        "long_url",
+        "short_url",
+        "news_site",
+        "title",
+        "description",
+        "intro",
+        "keywords",
+        "published_time",
+        "image_links",
+        "links",
+        "read_time"
+      ).toDF(columnName: _*)
+
     MongoSpark.save(newDf, writeConfig)
   }
-
 }

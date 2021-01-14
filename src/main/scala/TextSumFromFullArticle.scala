@@ -12,9 +12,7 @@ class TextSumFromFullArticle(spark: SparkSession) {
 
   }
 
-  object TextSumFromFullArticle
-  {
-
+  object TextSumFromFullArticle{
     def splitSentences(input: String) = {
       //regex splits sentences
       input
@@ -36,7 +34,6 @@ class TextSumFromFullArticle(spark: SparkSession) {
         .split("\\s")
         .toList
         .map(x => (input._1, x))
-
     }
 
     def textSum(article: String, keys: List[String], id: String): (String, String) = {

@@ -19,8 +19,6 @@ class SimpleTextSum(spark: SparkSession) {
       .map(x => (x.getAs[String](1), x.getAs[String](0), x.getAs[Map[String, Int]](0)("sentence")))
 
     //df.join(sum, Seq("_id"), joinType = "outer")
-
-
   }
 
   object TopSentences{
@@ -50,7 +48,5 @@ class SimpleTextSum(spark: SparkSession) {
       (id, topSentences.mkString(""))
 
     }
-
   }
-
 }
