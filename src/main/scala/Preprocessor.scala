@@ -21,9 +21,7 @@ class Preprocessor {
    * @param data = crawled article
    */
   def run_pp(data: DataFrame):DataFrame = {
-    // Zieht sich ein Datensatz aus der Row.
-    //val f=data.first()
-    //val daters =
+    // retrieves input data from row of Dataframe
     preprocessArticles(data)
   }
 
@@ -48,8 +46,22 @@ class Preprocessor {
       x.get(10).asInstanceOf[Timestamp],
       x.getAs[Array[String]](4),
       x.getAs[Array[String]](7)))
-    spark.createDataFrame(data_raw.collect()).toDF("_id","authors", "crawl_time", "longUrl","short_url",
-      "news_site", "title", "description", "intro","text", "keywords_given", "published_time", "image_links", "links").limit(10)
+    spark.createDataFrame(data_raw.collect()).toDF(
+      "_id",
+                "authors",
+                "crawl_time",
+                "longUrl",
+                "short_url",
+                "news_site",
+                "title",
+                "description",
+                "intro",
+                "text",
+                "keywords_given",
+                "published_time",
+                "image_links",
+                "links"
+    ).limit(10)
   }
 
   /** this method will perform several operations of preprocessing on the incoming text(body),
@@ -60,11 +72,11 @@ class Preprocessor {
    * @param data (key-value structure, build by the method "getTextandID")
    */
   def preprocessArticles(data: DataFrame):DataFrame= {
-    //converting the RDD into a dataframe
-    //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
     //src: https://github.com/JohnSnowLabs/spark-nlp
+    //converting the RDD into a dataframe
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
 
+    //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
     val documentDF = new DocumentAssembler()
       .setInputCol("text")
       .setOutputCol("document")
@@ -104,7 +116,7 @@ class Preprocessor {
 
     val doc = documentDF.transform(data)
 
-    //performing NER
+    //performing NER (named entity recognition)
     val pipeline = PretrainedPipeline("entity_recognizer_md", "de")
     val entity_analyse = pipeline.transform(doc)
 
@@ -114,9 +126,8 @@ class Preprocessor {
     val lemma = lemmatized.transform(cTokens).drop("token")
     val keyword = keywords.transform(lemma)
 
-    //merging NER and preprocessing results into a single Dataframe to be returned
+    //merging NER and preprocessed results into a single Dataframe to be returned
     entity_analyse.join(keyword, Seq("_id"), joinType = "outer"  )
-
 
 
     //entity_analyse.printSchema

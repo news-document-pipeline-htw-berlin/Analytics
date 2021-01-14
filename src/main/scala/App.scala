@@ -12,11 +12,9 @@ import org.apache.spark.sql.types.{DoubleType, FloatType, StringType, StructFiel
 
 object App {
 
-
   def joinDataFrames(frame1: DataFrame, frame2: DataFrame): DataFrame = {
     frame1.join(frame2, Seq("_id"), "left_anti")
   }
-
 
   def main(args: Array[String]): Unit = {
 
@@ -30,6 +28,7 @@ object App {
       .config("spark.mongodb.input.uri", inputUri)
       .config("spark.mongodb.output.uri", outputUri)
       .getOrCreate()
+
     while (articlesLeft) {
       val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
       val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
@@ -45,13 +44,11 @@ object App {
       }
       if (new_data.count() != 0) {
         val sentimentAnalysis = new SentimentAnalysis(spark)
-        val data_sentimentAnalysis = sentimentAnalysis.analyseSentens(preprocessor.run_pp(new_data))
-
+        val data_sentimentAnalysis = sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data))
 
         val text_sum_From_Full_Article = new TextSumFromFullArticle(spark)
         //val data_Analysis=simpleTextSum.applyGetTopSentences(data_sentimentAnalysis)
         //data_Analysis.show(false)
-
 
         DBConnector.writeToDB(data_sentimentAnalysis, writeConfig)
       } else {
@@ -59,5 +56,4 @@ object App {
       }
     }
   }
-
 }

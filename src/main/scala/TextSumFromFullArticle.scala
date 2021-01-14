@@ -43,7 +43,7 @@ class TextSumFromFullArticle(spark: SparkSession) {
 
       val lowerCaseKeys = keys.map(x => x.toLowerCase)
       val articleSplitBySentence = splitSentences(article)
-      println(articleSplitBySentence)
+      //println(articleSplitBySentence)
       val articleSentencesAsMap = articleSplitBySentence.toMap
       val tokenizedSentences = articleSplitBySentence.flatMap(x => tokenize(x))
 
@@ -60,11 +60,9 @@ class TextSumFromFullArticle(spark: SparkSession) {
           .mkString("")
 
       (id, output)
-
     }
 
     def applyTextSum(data: DataFrame): DataFrame = {
-
 
       val kwaTriple = data.map(x => (x.getString(0), x.getAs[mutable.WrappedArray[String]](2), x.getString(1)))
 
@@ -72,5 +70,4 @@ class TextSumFromFullArticle(spark: SparkSession) {
 
     }
   }
-
 }
