@@ -58,7 +58,6 @@ object DBConnector {
    */
 
   def writeToDB(savedInstance: DataFrame, writeConfig: WriteConfig): Unit = {
-    //val newDf = savedInstance.select(savedInstance.columns.map(c => col(c).cast(StringType)) : _*)
     val columnName = Seq("_id", "text", "entities", "lemmatizer", "sentimens", "keywords_extracted",  "authors", "crawl_time", "long_url","short_url",
       "news_site", "title", "description", "intro", "keywords", "published_time", "image_links", "links", "read_time")
     val newDf =savedInstance.select("_id", "text", "entities.result", "lemmatizer.result", "sentimens", "keywords_extracted.result", "authors", "crawl_time", "long_url","short_url",
