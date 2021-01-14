@@ -6,12 +6,8 @@ import com.johnsnowlabs.nlp.annotators._
 import com.johnsnowlabs.nlp.annotators.keyword.yake.YakeModel
 import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
-import org.apache.parquet.Strings
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
-import org.joda.time.DateTime
-
-import scala.collection.mutable
 
 
 class Preprocessor {

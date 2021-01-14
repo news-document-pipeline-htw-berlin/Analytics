@@ -1,6 +1,4 @@
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-
-import scala.collection.mutable
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class SimpleTextSum(spark: SparkSession) {
 

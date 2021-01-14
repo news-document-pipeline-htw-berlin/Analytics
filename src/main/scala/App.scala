@@ -1,14 +1,5 @@
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import com.johnsnowlabs.nlp.SparkNLP
-import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
 import com.mongodb.spark.config.ReadConfig
-import org.apache.spark.sql.catalyst.dsl.expressions.{DslExpression, StringToAttributeConversionHelper}
-import org.apache.spark.sql.functions.{col, schema_of_json}
-import org.apache.spark.sql.types.{DoubleType, FloatType, StringType, StructField}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object App {
 
@@ -47,9 +38,7 @@ object App {
         val data_sentimentAnalysis = sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data))
 
         val text_sum_From_Full_Article = new TextSumFromFullArticle(spark)
-        //val data_Analysis=simpleTextSum.applyGetTopSentences(data_sentimentAnalysis)
-        //data_Analysis.show(false)
-
+        text_sum_From_Full_Article.getData(data_sentimentAnalysis).show()
         DBConnector.writeToDB(data_sentimentAnalysis, writeConfig)
       } else {
         articlesLeft = false

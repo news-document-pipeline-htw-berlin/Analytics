@@ -1,11 +1,6 @@
 import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.{ReadConfig, WriteConfig}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.{DataTypes, FloatType, StringType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-
-import scala.reflect.internal.util.NoPosition.source
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object DBConnector {
 
