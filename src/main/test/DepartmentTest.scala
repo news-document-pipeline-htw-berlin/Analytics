@@ -1,8 +1,16 @@
 import department.DepartmentMapping._
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
 class DepartmentTest extends FunSuite {
-  val departments: Map[String, List[String]] = readJson("src/main/resources/departments.json")
+  val spark: SparkSession = SparkSession.builder()
+      .master("local[4]")
+      .appName("analysis")
+      .getOrCreate()
+
+
+  val departments: Broadcast[Map[String, List[String]]] = readJson("src/main/resources/departments.json",spark)
 
 
   test("Read department.json") {
@@ -13,14 +21,14 @@ class DepartmentTest extends FunSuite {
       "Wirtschaft" -> List("Netzökonomie", "Ökonomie", "Wirtschaft", "Geld"),
       "Sport" -> List("Sport", "Fussball"),
       "Wissen" -> List("Wissen", "Wissenschaft", "Gesundheit", "Klimawandel", "Psychologie"))
-    assert(departments.size === 15)
-    assert(departments.getOrElse("Satire", null) === expected.getOrElse("Satire", null))
-    assert(departments.getOrElse("Umwelt", null) === expected.getOrElse("Umwelt", null))
-    assert(departments.getOrElse("Politik", null) === expected.getOrElse("Politik", null))
-    assert(departments.getOrElse("Geschichte", null) === expected.getOrElse("Geschichte", null))
-    assert(departments.getOrElse("Wirtschaft", null) === expected.getOrElse("Wirtschaft", null))
-    assert(departments.getOrElse("Sport", null) === expected.getOrElse("Sport", null))
-    assert(departments.getOrElse("Wissen", null) === expected.getOrElse("Wissen", null))
+    assert(departments.value.size === 15)
+    assert(departments.value.getOrElse("Satire", null) === expected.getOrElse("Satire", null))
+    assert(departments.value.getOrElse("Umwelt", null) === expected.getOrElse("Umwelt", null))
+    assert(departments.value.getOrElse("Politik", null) === expected.getOrElse("Politik", null))
+    assert(departments.value.getOrElse("Geschichte", null) === expected.getOrElse("Geschichte", null))
+    assert(departments.value.getOrElse("Wirtschaft", null) === expected.getOrElse("Wirtschaft", null))
+    assert(departments.value.getOrElse("Sport", null) === expected.getOrElse("Sport", null))
+    assert(departments.value.getOrElse("Wissen", null) === expected.getOrElse("Wissen", null))
   }
 
   test("Test departments for keywords") {
