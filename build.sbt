@@ -9,7 +9,8 @@ mainClass in (Compile, packageBin) := Some("App")
 
 libraryDependencies ++=Seq("org.apache.spark" %% "spark-core" % "2.4.5" ,
   "org.apache.spark" %% "spark-sql" % "2.4.5",
-  "org.apache.spark" %% "spark-mllib" % "2.4.5")
+  "org.apache.spark" %% "spark-mllib" % "2.4.5", "junit" % "junit" % "4.12","org.scalactic" %% "scalactic" % "3.0.8",
+			   "org.scalatest" %% "scalatest" % "3.0.8" % "test")
 libraryDependencies ++=Seq(
   "com.johnsnowlabs.nlp" %% "spark-nlp" % "2.7.0")
 libraryDependencies ++=Seq(
