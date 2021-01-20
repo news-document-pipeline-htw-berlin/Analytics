@@ -125,7 +125,6 @@ class Preprocessor {
     //merging NER and preprocessed results into a single Dataframe to be returned
     entity_analyse.join(keyword, Seq("_id"), joinType = "outer"  )
 
-
     //entity_analyse.printSchema
     //keyword.select("_id","keywords.result").show(truncate = false)
   }

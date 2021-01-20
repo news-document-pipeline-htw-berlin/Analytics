@@ -75,7 +75,8 @@ object DBConnector {
       "published_time",
       "image_links",
       "links",
-      "read_time"
+      "read_time",
+      "department"
     )
 
     val newDf = savedInstance
@@ -98,7 +99,8 @@ object DBConnector {
         "published_time",
         "image_links",
         "links",
-        "read_time"
+        "read_time",
+        "department"
       ).toDF(columnName: _*)
 
     MongoSpark.save(newDf, writeConfig)

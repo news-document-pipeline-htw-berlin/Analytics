@@ -1,4 +1,5 @@
 import com.mongodb.spark.config.ReadConfig
+import department.DepartmentMapping.{mapDepartment, mapDepartmentTest, readJson}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object App {
@@ -14,7 +15,7 @@ object App {
     val outputUri = DBConnector.createUri("127.0.0.1", "Articles_nlp", "articles_analytics")
 
     val spark = SparkSession.builder()
-      .master("local[4]")
+      .master("local[*]")
       .appName("analysis")
       .config("spark.mongodb.input.uri", inputUri)
       .config("spark.mongodb.output.uri", outputUri)
@@ -37,9 +38,10 @@ object App {
         val sentimentAnalysis = new SentimentAnalysis(spark)
         val data_sentimentAnalysis = sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data))
 
+        val data_department =mapDepartmentTest(readJson("src/main/resources/departments.json", spark), data_sentimentAnalysis, spark)
         val text_sum_From_Full_Article = new TextSumFromFullArticle(spark)
-        text_sum_From_Full_Article.getData(data_sentimentAnalysis).show()
-        DBConnector.writeToDB(data_sentimentAnalysis, writeConfig)
+        //text_sum_From_Full_Article.getData(data_sentimentAnalysis).show()
+        DBConnector.writeToDB(data_department, writeConfig)
       } else {
         articlesLeft = false
       }

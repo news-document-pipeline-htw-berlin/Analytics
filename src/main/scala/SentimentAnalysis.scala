@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
@@ -9,8 +11,7 @@ class SentimentAnalysis(spark: SparkSession) {
   val sentiments: Map[String, Double] = fileLoader("SentimentMerged.txt")
 
   def fileLoader(path: String): Map[String, Double] = {
-    val url = getClass.getResource("/" + path).getPath
-    val src = scala.io.Source.fromFile(url)
+    val src = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/SentimentMerged.txt"))
     val iter = src.getLines().toList
     val result = sentimentListToMap(iter)
     src.close()

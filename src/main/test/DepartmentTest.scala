@@ -10,7 +10,7 @@ class DepartmentTest extends FunSuite {
       .getOrCreate()
 
 
-  val departments: Broadcast[Map[String, List[String]]] = readJson("src/main/resources/departments.json",spark)
+  val departments: Broadcast[Map[String, List[String]]] = h
 
 
   test("Read department.json") {
