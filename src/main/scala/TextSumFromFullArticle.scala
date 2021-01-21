@@ -51,7 +51,7 @@ object TextSumFromFullArticle {
         .sortBy { case (sentenceId, amountOfKeywordsContained) => -amountOfKeywordsContained } //Sort by Size Descending
         .take(3) //Take Top3 SentenceID
         .map { case (sentenceId, amountOfKeywordsContained) => articleSentencesAsMap.getOrElse(sentenceId, "") } //Take Top Three Sentences from "full Map"
-        .mkString("")
+        .mkString(" ")
 
     (id, output)
 
@@ -59,7 +59,7 @@ object TextSumFromFullArticle {
 
   def applyTextSum(data: DataFrame, spark: SparkSession): DataFrame = {
 
-    val textSum_rdd = data.select("long_url", "text", "keywords_extracted.result").distinct.rdd.map(x => textSum(x.getAs[String](0), x.getAs[mutable.WrappedArray[String]](2).toList, x.getAs[String](1)))
+    val textSum_rdd = data.select("long_url", "text", "keywords_extracted.result").distinct.rdd.map(x => textSum(x.getAs[String](1), x.getAs[mutable.WrappedArray[String]](2).toList, x.getAs[String](0)))
     val  textSum_df =spark.createDataFrame(textSum_rdd).toDF("long_url", "textSum")
 
     textSum_df.join(data, Seq("long_url"), joinType = "outer")
