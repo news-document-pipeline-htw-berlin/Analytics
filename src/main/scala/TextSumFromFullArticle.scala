@@ -2,17 +2,12 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
 
-class TextSumFromFullArticle(spark: SparkSession) {
+object TextSumFromFullArticle {
 
-  import spark.implicits._
+  def getData(df: DataFrame, spark: SparkSession): DataFrame = {
 
-
-  def getData(df: DataFrame): DataFrame = {
-    val arg = df.select("_id", "keywords_extracted.result", "text");
-    applyTextSum(arg)
-
+    applyTextSum(df, spark)
   }
-
 
 
   def splitSentences(input: String) = {
@@ -62,12 +57,12 @@ class TextSumFromFullArticle(spark: SparkSession) {
 
   }
 
-  def applyTextSum(data: DataFrame): DataFrame = {
+  def applyTextSum(data: DataFrame, spark: SparkSession): DataFrame = {
 
+    val textSum_rdd = data.select("long_url", "text", "keywords_extracted.result").distinct.rdd.map(x => textSum(x.getAs[String](0), x.getAs[mutable.WrappedArray[String]](2).toList, x.getAs[String](1)))
+    val  textSum_df =spark.createDataFrame(textSum_rdd).toDF("long_url", "textSum")
 
-    val kwaTriple = data.map(x => (x.getString(0), x.getAs[mutable.WrappedArray[String]](2), x.getString(1)))
-
-    kwaTriple.map { case (id, keys, article) => textSum(id, keys.toList, article) }.toDF("_id", "textsum")
+    textSum_df.join(data, Seq("long_url"), joinType = "outer")
 
   }
 

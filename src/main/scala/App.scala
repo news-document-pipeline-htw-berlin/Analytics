@@ -32,15 +32,21 @@ object App {
       if (mongoDataAnalysis.head(1).isEmpty) {
         new_data = mongoDataCrawler.limit(1)
       } else {
-        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(500)
+        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(5)
       }
       if (new_data.count() != 0) {
         val sentimentAnalysis = new SentimentAnalysis(spark)
         val data_sentimentAnalysis = sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data))
 
         val data_department =mapDepartmentTest(readJson("src/main/resources/departments.json", spark), data_sentimentAnalysis, spark)
-        val text_sum_From_Full_Article = new TextSumFromFullArticle(spark)
-        //text_sum_From_Full_Article.getData(data_sentimentAnalysis).show()
+
+        val textSum = TextSumFromFullArticle.getData(data_sentimentAnalysis,spark)
+        textSum.select("textSum").show(truncate = false)
+
+        //data_sentimentAnalysis.join(textSum, Seq("_id"), joinType = "outer"  )
+
+
+
         DBConnector.writeToDB(data_department, writeConfig)
       } else {
         articlesLeft = false
