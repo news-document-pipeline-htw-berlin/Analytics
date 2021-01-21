@@ -46,7 +46,9 @@ def textSum(article:String,keys:List[String]):String = {
 
 }
 
-val keywordList = List("tafeln","grundgesetzes","eigentum","sozialstaat","leuten")
+//val keywordList = List("tafeln","grundgesetzes","eigentum","sozialstaat","leuten")
+
+val keywordList= List()
 
 textSum(textexample,keywordList)
 
