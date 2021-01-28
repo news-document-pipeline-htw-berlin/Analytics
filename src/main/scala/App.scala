@@ -1,5 +1,6 @@
 import com.mongodb.spark.config.ReadConfig
 import department.DepartmentMapping.{mapDepartment, mapDepartmentTest, readJson}
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object App {
@@ -15,11 +16,16 @@ object App {
     val outputUri = DBConnector.createUri("127.0.0.1", "Articles_nlp", "articles_analytics")
 
     val spark = SparkSession.builder()
-      .master("local[*]")
+      .master("local[4]")
       .appName("analysis")
       .config("spark.mongodb.input.uri", inputUri)
       .config("spark.mongodb.output.uri", outputUri)
       .getOrCreate()
+
+
+    val hadoopConfig: Configuration = spark.sparkContext.hadoopConfiguration
+    hadoopConfig.set("fs.hdfs.impl", classOf[org.apache.hadoop.hdfs.DistributedFileSystem].getName)
+    hadoopConfig.set("fs.file.impl", classOf[org.apache.hadoop.fs.LocalFileSystem].getName)
 
     while (articlesLeft) {
       val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
@@ -35,14 +41,15 @@ object App {
         new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(500)
       }
       if (new_data.count() != 0) {
+        mongoDataAnalysis.unpersist()
         val sentimentAnalysis = new SentimentAnalysis(spark)
-        val data_sentimentAnalysis = sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data))
-        val data_department =mapDepartmentTest(readJson("src/main/resources/departments.json", spark), data_sentimentAnalysis, spark)
-        val textSum = TextSumFromFullArticle.getData(data_department,spark)
-        DBConnector.writeToDB(textSum, writeConfig)
+        DBConnector.writeToDB(TextSumFromFullArticle.getData(
+          mapDepartmentTest(readJson("src/main/resources/departments.json", spark),
+            sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data)), spark), spark), writeConfig)
       } else {
         articlesLeft = false
       }
+
     }
   }
 }

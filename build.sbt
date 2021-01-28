@@ -20,3 +20,8 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.tensorflow" %% "spark-tensorflow-connector" % "1.15.0" )
 
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
+

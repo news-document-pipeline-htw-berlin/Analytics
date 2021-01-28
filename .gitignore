@@ -2,3 +2,6 @@
 target
 .bsp
 /project/build.properties
+/project/entity_recognizer_md_de_2
+/project/lemma_de_2
+/project/metadata

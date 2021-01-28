@@ -6,17 +6,63 @@ import com.johnsnowlabs.nlp.annotators._
 import com.johnsnowlabs.nlp.annotators.keyword.yake.YakeModel
 import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 
 
 class Preprocessor {
 
+
+  private var isTraning = false
+
+  private var model :PipelineModel = null
+  //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
+  val documentDF = new DocumentAssembler()
+    .setInputCol("text")
+    .setOutputCol("document")
+
+  //splitting the incoming data into sentences
+  val sentenceDetector = new SentenceDetector()
+    .setInputCols("document")
+    .setOutputCol("sentence")
+
+  //further splitting of the sentences into tokens
+  val tokenizer = new Tokenizer()
+    .setInputCols("sentence")
+    .setOutputCol("token")
+
+  //removing punctuation, numbers and "dirty" characters
+  val normalizer = new Normalizer()
+    .setInputCols("token")
+    .setOutputCol("normalized")
+    .setLowercase(false)
+
+  //getting rid of stopword ("der", "die", "eine", ect.)
+  val stopWords = StopWordsCleaner.load("./src/main/resources")
+    .setInputCols("normalized")
+    .setOutputCol("StopWordsCleaner")
+
+  //lemmatizing words -> e.g. reducing words to their root / neutral form
+  val lemmatized = LemmatizerModel.load("./src/main/resources/lemma_de_2")
+    .setInputCols("StopWordsCleaner")
+    .setOutputCol("lemmatizer")
+
+  val keywords = new YakeModel()
+    .setInputCols("lemmatizer")
+    .setOutputCol("keywords_extracted")
+    .setMinNGrams(1)
+    .setMaxNGrams(1)
+    .setNKeywords(5)
+
+  val pipelinePre = PretrainedPipeline.fromDisk("./src/main/resources/entity_recognizer_md_de_2")
+
+  val pipeline = new Pipeline().setStages(Array(normalizer, stopWords, lemmatized, keywords))
   /** this method will run the preprocessing pipeline
    *
    * @param data = crawled article
    */
-  def run_pp(data: DataFrame):DataFrame = {
+  def run_pp(data: DataFrame): DataFrame = {
     // retrieves input data from row of Dataframe
     preprocessArticles(data)
   }
@@ -27,7 +73,7 @@ class Preprocessor {
    * @return key-value pairs ID -> text-body
    */
   def getRawDataFrame(data: RDD[Row]): DataFrame = {
-    val data_raw=data.map(x => (
+    val data_raw = data.map(x => (
       x.get(0).toString,
       x.getAs[Array[String]](1),
       x.get(2).asInstanceOf[Timestamp],
@@ -44,19 +90,19 @@ class Preprocessor {
       x.getAs[Array[String]](7)))
     spark.createDataFrame(data_raw.collect()).toDF(
       "_id",
-                "authors",
-                "crawl_time",
-                "longUrl",
-                "short_url",
-                "news_site",
-                "title",
-                "description",
-                "intro",
-                "text",
-                "keywords_given",
-                "published_time",
-                "image_links",
-                "links"
+      "authors",
+      "crawl_time",
+      "longUrl",
+      "short_url",
+      "news_site",
+      "title",
+      "description",
+      "intro",
+      "text",
+      "keywords_given",
+      "published_time",
+      "image_links",
+      "links"
     ).limit(10)
   }
 
@@ -67,65 +113,17 @@ class Preprocessor {
    *
    * @param data (key-value structure, build by the method "getTextandID")
    */
-  def preprocessArticles(data: DataFrame):DataFrame= {
+  def preprocessArticles(data: DataFrame): DataFrame = {
     //src: https://github.com/JohnSnowLabs/spark-nlp
     //converting the RDD into a dataframe
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
-
-    //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
-    val documentDF = new DocumentAssembler()
-      .setInputCol("text")
-      .setOutputCol("document")
-
-    //splitting the incoming data into sentences
-    val sentenceDetector = new SentenceDetector()
-      .setInputCols("document")
-      .setOutputCol("sentence")
-
-    //further splitting of the sentences into tokens
-    val tokenizer = new Tokenizer()
-      .setInputCols("sentence")
-      .setOutputCol("token")
-
-    //removing punctuation, numbers and "dirty" characters
-    val normalizer = new Normalizer()
-      .setInputCols("token")
-      .setOutputCol("normalized")
-      .setLowercase(false)
-
-    //getting rid of stopword ("der", "die", "eine", ect.)
-    val stopWords = StopWordsCleaner.pretrained("stopwords_de", "de")
-      .setInputCols("normalized")
-      .setOutputCol("StopWordsCleaner")
-
-    //lemmatizing words -> e.g. reducing words to their root / neutral form
-    val lemmatized = LemmatizerModel.pretrained(name = "lemma", lang = "de")
-      .setInputCols("StopWordsCleaner")
-      .setOutputCol("lemmatizer")
-
-    val keywords = new YakeModel()
-      .setInputCols("lemmatizer")
-      .setOutputCol("keywords_extracted")
-      .setMinNGrams(1)
-      .setMaxNGrams(1)
-      .setNKeywords(5)
-
     val doc = documentDF.transform(data)
+    val entity_analyse = pipelinePre.transform(doc)
 
-    //performing NER (named entity recognition)
-    val pipeline = PretrainedPipeline("entity_recognizer_md", "de")
-    val entity_analyse = pipeline.transform(doc)
-
-    val tokens = entity_analyse.select("_id" ,"token")
-    val normalize = normalizer.fit(tokens).transform(tokens)
-    val cTokens = stopWords.transform(normalize)
-    val lemma = lemmatized.transform(cTokens).drop("token")
-    val keyword = keywords.transform(lemma)
-
-    //merging NER and preprocessed results into a single Dataframe to be returned
-    entity_analyse.join(keyword, Seq("_id"), joinType = "outer"  )
-
-    //entity_analyse.printSchema
-    //keyword.select("_id","keywords.result").show(truncate = false)
+    if (!isTraning) {
+      model = pipeline.fit(entity_analyse)
+      isTraning = true
+    }
+    model.transform(entity_analyse)
   }
 }
