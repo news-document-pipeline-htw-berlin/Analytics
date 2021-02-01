@@ -1,5 +1,6 @@
 import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.{ReadConfig, WriteConfig}
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object DBConnector {
@@ -57,53 +58,31 @@ object DBConnector {
    */
 
   def writeToDB(savedInstance: DataFrame, writeConfig: WriteConfig): Unit = {
-    val columnName = Seq(
-      "_id",
-      "text",
-      "entities",
-      "lemmatizer",
-      "sentiments",
-      "keywords_extracted",
-      "authors", "crawl_time",
-      "long_url",
-      "short_url",
-      "news_site",
-      "title",
-      "description",
-      "intro",
-      "keywords",
-      "published_time",
-      "image_links",
-      "links",
-      "read_time",
-      "department",
-      "textSum"
-    )
 
     val newDf = savedInstance
       .select(
-        "_id",
-        "text",
-        "entities.result",
-        "lemmatizer.result",
-        "sentimens",
-        "keywords_extracted.result",
-        "authors",
-        "crawl_time",
-        "long_url",
-        "short_url",
-        "news_site",
-        "title",
-        "description",
-        "intro",
-        "keywords",
-        "published_time",
-        "image_links",
-        "links",
-        "read_time",
-        "department",
-        "textSum"
-      ).toDF(columnName: _*)
+        col("_id"),
+        col("text"),
+        col("entities.result").as("entities"),
+        col("lemmatizer.result").as("lemmatizer"),
+        col("sentimens"),
+        col("keywords_extracted.result").as("keywords_extracted"),
+        col("authors"),
+        col("crawl_time"),
+        col("long_url"),
+        col("short_url"),
+        col("news_site"),
+        col("title"),
+        col("description"),
+        col("intro"),
+        col("keywords"),
+        col("published_time"),
+        col("image_links"),
+        col("links"),
+        col("read_time"),
+        col("department"),
+        col("textSum")
+      )
 
     MongoSpark.save(newDf, writeConfig)
   }

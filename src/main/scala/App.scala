@@ -26,19 +26,18 @@ object App {
     val hadoopConfig: Configuration = spark.sparkContext.hadoopConfiguration
     hadoopConfig.set("fs.hdfs.impl", classOf[org.apache.hadoop.hdfs.DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl", classOf[org.apache.hadoop.fs.LocalFileSystem].getName)
-
+    val preprocessor = new Preprocessor()
     while (articlesLeft) {
       val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
       val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
       val writeConfig = DBConnector.createWriteConfig(outputUri, sparkSession = spark, mode = "append")
-      val preprocessor = new Preprocessor()
       val ordersReadConfig = ReadConfig(Map("collection" -> "articles_analytics"), Some(ReadConfig(spark)))
       val mongoDataAnalysis = DBConnector.readFromDBAnalyst(sparkSession = spark, readConfig = ordersReadConfig)
       var new_data: DataFrame = null
       if (mongoDataAnalysis.head(1).isEmpty) {
         new_data = mongoDataCrawler.limit(1)
       } else {
-        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(500)
+        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(1000)
       }
       if (new_data.count() != 0) {
         mongoDataAnalysis.unpersist()

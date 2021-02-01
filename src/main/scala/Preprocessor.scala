@@ -8,7 +8,9 @@ import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import com.johnsnowlabs.nlp.util.io.ResourceHelper.spark
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.Row.empty
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{DataFrame, Row, functions}
 
 
 class Preprocessor {
@@ -117,12 +119,15 @@ class Preprocessor {
     //src: https://github.com/JohnSnowLabs/spark-nlp
     //converting the RDD into a dataframe
     //by using the DocumentAssembler we ensure the input data to have the right format for further processing
-    val doc = documentDF.transform(data)
+    val data_with_text = data.where(functions.length(col("text")) > 15)
+    val doc = documentDF.transform(data_with_text)
     val entity_analyse = pipelinePre.transform(doc)
 
     if (!isTraning) {
       model = pipeline.fit(entity_analyse)
-      isTraning = true
+      if(entity_analyse.count >= 500){
+        isTraning = true
+      }
     }
     model.transform(entity_analyse)
   }
