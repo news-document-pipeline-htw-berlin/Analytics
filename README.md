@@ -5,11 +5,19 @@
 
 # Quickstart
 
-> git clone https://github.com/news-document-pipeline-htw-berlin/Analytics \
-> cd Analytics\
-> Edit inputUri and outputUri in App\
-> Make sure input MongoDB is structured according to cheat sheet \
-> sbt run
++ git clone https://github.com/news-document-pipeline-htw-berlin/Analytics \
++ Add 3 Spark-NLP-Models (NamedEntityRecognition, StopWordCleaner, Lemmatizer - links are provided below) \
++ cd Analytics\
++ Edit inputUri and outputUri in App\
++ Make sure input MongoDB is structured according to cheat sheet \
++ sbt run
+
+# Links for required NLP Models
+
++ StopWordCleaner: https://nlp.johnsnowlabs.com/2020/07/14/stopwords_de.html
++ Lemmatizer: https://s3.amazonaws.com/auxdata.johnsnowlabs.com/public/models/lemma_de_2.0.8_2.4_1561248996126.zip
++ NamedEntityRecognition: https://s3.amazonaws.com/auxdata.johnsnowlabs.com/public/models/entity_recognizer_md_de_2.4.0_2.4_1579722895254.zip
+
 
 # MongoDB Cheat sheet
 
