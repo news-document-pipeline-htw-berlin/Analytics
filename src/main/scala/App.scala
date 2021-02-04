@@ -5,6 +5,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object App {
 
+  var old_counter :Long = 0
+
   def joinDataFrames(frame1: DataFrame, frame2: DataFrame): DataFrame = {
     frame1.join(frame2, Seq("_id"), "left_anti")
   }
@@ -39,12 +41,13 @@ object App {
       } else {
         new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(1000)
       }
-      if (new_data.count() != 0) {
+      if (new_data.count() != old_counter) {
         mongoDataAnalysis.unpersist()
         val sentimentAnalysis = new SentimentAnalysis(spark)
         DBConnector.writeToDB(TextSumFromFullArticle.getData(
           mapDepartmentTest(readJson("src/main/resources/departments.json", spark),
             sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data)), spark), spark), writeConfig)
+        old_counter =new_data.count()
       } else {
         articlesLeft = false
       }
