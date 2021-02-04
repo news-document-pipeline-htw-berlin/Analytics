@@ -6,7 +6,7 @@
 # Quickstart
 
 + git clone https://github.com/news-document-pipeline-htw-berlin/Analytics 
-+ Add 3 Spark-NLP-Models (NamedEntityRecognition, StopWordCleaner, Lemmatizer - links are provided below) 
++ Add 3 Spark-NLP-Models to main/resources folder (NamedEntityRecognition, StopWordCleaner, Lemmatizer - links are provided below) 
 + cd Analytics
 + Edit inputUri and outputUri in App
 + Make sure input MongoDB is structured according to cheat sheet 
