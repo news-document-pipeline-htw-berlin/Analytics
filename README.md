@@ -8,7 +8,7 @@
 + git clone https://github.com/news-document-pipeline-htw-berlin/Analytics 
 + Add 3 Spark-NLP-Models to main/resources folder (NamedEntityRecognition, StopWordCleaner, Lemmatizer - links are provided below) 
 + cd Analytics
-+ Edit inputUri and outputUri in App
++ Edit inputUri and outputUri in App.class so they refer to where your inputData is stored and where you want to save your processed data 
 + Make sure input MongoDB is structured according to cheat sheet 
 + sbt run
 
