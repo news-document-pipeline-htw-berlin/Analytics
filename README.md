@@ -61,4 +61,5 @@
 + sentiments          = calculated sentiment value for a given text
 + short_url           = the shortened URL of the article
 + text                = body of the article 
++ textsum             = a generated summarization of the text consisting of three sentences chosen by their calculated significance
 + title               = title of the article
