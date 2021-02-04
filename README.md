@@ -1,6 +1,7 @@
 # Prerequisite
 + Java 8
 + MongoDB
++ Scala 2.11.12
 
 # Quickstart
 
