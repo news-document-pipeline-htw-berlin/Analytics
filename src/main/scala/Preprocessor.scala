@@ -41,12 +41,12 @@ class Preprocessor {
     .setLowercase(false)
 
   //getting rid of stopword ("der", "die", "eine", ect.)
-  val stopWords = StopWordsCleaner.load("./src/main/resources")
+  val stopWords = StopWordsCleaner.load("analyse/src/main/resources")
     .setInputCols("normalized")
     .setOutputCol("StopWordsCleaner")
 
   //lemmatizing words -> e.g. reducing words to their root / neutral form
-  val lemmatized = LemmatizerModel.load("./src/main/resources/lemma_de_2")
+  val lemmatized = LemmatizerModel.load("analyse/src/main/resources/lemma_de_2")
     .setInputCols("StopWordsCleaner")
     .setOutputCol("lemmatizer")
 
@@ -57,7 +57,7 @@ class Preprocessor {
     .setMaxNGrams(1)
     .setNKeywords(5)
 
-  val pipelinePre = PretrainedPipeline.fromDisk("./src/main/resources/entity_recognizer_md_de_2")
+  val pipelinePre = PretrainedPipeline.fromDisk("analyse/src/main/resources/entity_recognizer_md_de_2")
 
   val pipeline = new Pipeline().setStages(Array(normalizer, stopWords, lemmatized, keywords))
   /** this method will run the preprocessing pipeline

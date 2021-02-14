@@ -36,11 +36,17 @@ object DepartmentMapping {
   }
 
   def mapDepartmentTest(department: Broadcast[Map[String, List[String]]], keyWords: DataFrame, sparkSession: SparkSession): DataFrame = {
+    val dep = department.value.map(x => (x._1, x._2.map(y => y.toLowerCase)))
+    val department_rdd = keyWords.select("long_url", "keywords_extracted.result", "keywords").distinct.rdd.map(x => (x.getAs[String](0),
+      if (x.get(2) != null) {
+        department.value.map(y => if (y._2.intersect(x.getAs[List[String]](2)).nonEmpty) y._1 else null).filter(_ != null).toList
+      }
+      else {
+        dep.map(y => if (
+          y._2.intersect(x.getAs[List[String]](1)).nonEmpty) y._1 else null).filter(_ != null).toList
+      }))
 
-    val department_rdd = keyWords.select("long_url", "keywords").distinct.rdd.map(x => (x.getAs[String](0), department.value.map(y => if (
-      y._2.intersect(x.getAs[List[String]](1)).nonEmpty) y._1 else null).filter(_ != null).toList))
-
-    val department_df =sparkSession.createDataFrame(department_rdd).toDF("long_url", "department")
+    val department_df = sparkSession.createDataFrame(department_rdd).toDF("long_url", "department")
 
     department_df.join(keyWords, Seq("long_url"), joinType = "outer")
   }

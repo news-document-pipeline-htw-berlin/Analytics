@@ -14,8 +14,8 @@ object App {
   def main(args: Array[String]): Unit = {
 
     var articlesLeft = true;
-    val inputUri = DBConnector.createUri("127.0.0.1", "Articles_nlp", "articles_raw")
-    val outputUri = DBConnector.createUri("127.0.0.1", "Articles_nlp", "articles_analytics")
+    val inputUri = DBConnector.createUri("127.0.0.1", "articles", "scraped_articles")
+    val outputUri = DBConnector.createUri("127.0.0.1", "articles", "articles_analytics")
 
     val spark = SparkSession.builder()
       .master("local[4]")
@@ -29,6 +29,7 @@ object App {
     hadoopConfig.set("fs.hdfs.impl", classOf[org.apache.hadoop.hdfs.DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl", classOf[org.apache.hadoop.fs.LocalFileSystem].getName)
     val preprocessor = new Preprocessor()
+
     while (articlesLeft) {
       val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
       val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
@@ -39,15 +40,15 @@ object App {
       if (mongoDataAnalysis.head(1).isEmpty) {
         new_data = mongoDataCrawler.limit(1)
       } else {
-        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id")).limit(1000)
+        new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id"))
       }
       if (new_data.count() != old_counter) {
+        old_counter =new_data.count()
         mongoDataAnalysis.unpersist()
         val sentimentAnalysis = new SentimentAnalysis(spark)
         DBConnector.writeToDB(TextSumFromFullArticle.getData(
-          mapDepartmentTest(readJson("src/main/resources/departments.json", spark),
-            sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data)), spark), spark), writeConfig)
-        old_counter =new_data.count()
+          mapDepartmentTest(readJson("analyse/src/main/resources/departments.json", spark),
+            sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data.limit(10000))), spark), spark), writeConfig)
       } else {
         articlesLeft = false
       }
