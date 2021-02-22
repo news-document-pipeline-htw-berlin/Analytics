@@ -1,11 +1,11 @@
 import com.mongodb.spark.config.ReadConfig
-import department.DepartmentMapping.{mapDepartment, mapDepartmentTest, readJson}
+import department.DepartmentMapping.{mapDepartment, readJson}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object App {
 
-  var old_counter :Long = 0
+  var alreadyPreprocessedArticlesCount :Long = 0
 
   def joinDataFrames(frame1: DataFrame, frame2: DataFrame): DataFrame = {
     frame1.join(frame2, Seq("_id"), "left_anti")
@@ -34,20 +34,20 @@ object App {
       val readConfigInput = DBConnector.createReadConfig(inputUri, spark)
       val mongoDataCrawler = DBConnector.readFromDB(sparkSession = spark, readConfig = readConfigInput)
       val writeConfig = DBConnector.createWriteConfig(outputUri, sparkSession = spark, mode = "append")
-      val ordersReadConfig = ReadConfig(Map("collection" -> "articles_analytics"), Some(ReadConfig(spark)))
-      val mongoDataAnalysis = DBConnector.readFromDBAnalyst(sparkSession = spark, readConfig = ordersReadConfig)
+      val updatedReadConfig = ReadConfig(Map("collection" -> "articles_analytics"), Some(ReadConfig(spark)))
+      val mongoDataAnalysis = DBConnector.readFromDBAnalyst(sparkSession = spark, readConfig = updatedReadConfig)
       var new_data: DataFrame = null
       if (mongoDataAnalysis.head(1).isEmpty) {
         new_data = mongoDataCrawler.limit(1)
       } else {
         new_data = joinDataFrames(mongoDataCrawler, mongoDataAnalysis.select("_id"))
       }
-      if (new_data.count() != old_counter) {
-        old_counter =new_data.count()
+      if (new_data.count() != alreadyPreprocessedArticlesCount) {
+        alreadyPreprocessedArticlesCount =new_data.count()
         mongoDataAnalysis.unpersist()
         val sentimentAnalysis = new SentimentAnalysis(spark)
         DBConnector.writeToDB(TextSumFromFullArticle.getData(
-          mapDepartmentTest(readJson("analyse/src/main/resources/departments.json", spark),
+          mapDepartment(readJson("analyse/src/main/resources/departments.json", spark),
             sentimentAnalysis.analyseSentence(preprocessor.run_pp(new_data.limit(10000))), spark), spark), writeConfig)
       } else {
         articlesLeft = false

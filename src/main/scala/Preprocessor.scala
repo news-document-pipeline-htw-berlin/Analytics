@@ -16,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, Row, functions}
 class Preprocessor {
 
 
-  private var isTraning = false
+  private var isTrained = false
 
   private var model :PipelineModel = null
   //val dataDF = spark.createDataFrame(data.collect()).toDF("_id", "text").limit(100)
@@ -123,10 +123,10 @@ class Preprocessor {
     val doc = documentDF.transform(data_with_text)
     val entity_analyse = pipelinePre.transform(doc)
 
-    if (!isTraning) {
+    if (!isTrained) {
       model = pipeline.fit(entity_analyse)
       if(entity_analyse.count >= 500){
-        isTraning = true
+        isTrained = true
       }
     }
     model.transform(entity_analyse)

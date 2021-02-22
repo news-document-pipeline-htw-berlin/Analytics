@@ -1,6 +1,9 @@
 import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
 import org.apache.spark.sql.DataFrame
 
+/**
+ * currently unused
+ */
 class Key_Words {
 
   def tf_idf(data: DataFrame):Unit= {

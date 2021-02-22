@@ -27,15 +27,14 @@ object DepartmentMapping {
 
 
   /**
+   * assigns one or multiple departments (text categories) to a given text
+   *
    * @param department the Map from readJson containing k,v -> Department -> List of words which categorizes department
    * @param keyWords   extracted keywords in mongodb for each article
-   * @return list of appropriate categories for this keywords
+   * @param sparkSession
+   * @return DataFrame of appropriate categories for this keywords
    */
-  def mapDepartment(department: Broadcast[Map[String, List[String]]], keyWords: List[String]): List[String] = {
-    department.value.map(x => if (x._2.intersect(keyWords).nonEmpty) x._1 else null).filter(_ != null).toList
-  }
-
-  def mapDepartmentTest(department: Broadcast[Map[String, List[String]]], keyWords: DataFrame, sparkSession: SparkSession): DataFrame = {
+  def mapDepartment(department: Broadcast[Map[String, List[String]]], keyWords: DataFrame, sparkSession: SparkSession): DataFrame = {
     val dep = department.value.map(x => (x._1, x._2.map(y => y.toLowerCase)))
     val department_rdd = keyWords.select("long_url", "keywords_extracted.result", "keywords").distinct.rdd.map(x => (x.getAs[String](0),
       if (x.get(2) != null) {
