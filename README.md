@@ -40,7 +40,7 @@
 | 15    |  sentiments    |
 | 16    |  short_url    |
 | 17    |  text    |
-| 18    |  testsum    |
+| 18    |  textsum    |
 | 19    |  title    |
 
 + _id                 = unique Hash to identify a single article 
