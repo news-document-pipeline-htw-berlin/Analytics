@@ -19,7 +19,7 @@
 + NamedEntityRecognition: https://s3.amazonaws.com/auxdata.johnsnowlabs.com/public/models/entity_recognizer_md_de_2.4.0_2.4_1579722895254.zip
 
 
-# MongoDB Cheat sheet
+# MongoDB Cheat Sheet
 
 | 0    |    _id  |
 | ---- | ---- |
@@ -27,7 +27,7 @@
 | 2    |  crawl_time    |
 | 3    |  description    |
 | 4    |  entities    |
-| 5    |  imgae_links    |
+| 5    |  image_links    |
 | 6    |  intro    |
 | 7    |  keywords    |
 | 8    |  keywords_extracted    |
