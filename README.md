@@ -26,27 +26,29 @@
 | 1    |  authors    |
 | 2    |  crawl_time    |
 | 3    |  description    |
-| 4    |  entities    |
-| 5    |  image_links    |
-| 6    |  intro    |
-| 7    |  keywords    |
-| 8    |  keywords_extracted    |
-| 9    |  lemmatizer    |
-| 10    |  links    |
-| 11    |  long_url    |
-| 12    |  news_site    |
-| 13    |  published_time   |
-| 14    |  read_time    |
-| 15    |  sentiments    |
-| 16    |  short_url    |
-| 17    |  text    |
-| 18    |  textsum    |
-| 19    |  title    |
+| 4    |  departments    |
+| 5    |  entities    |
+| 6    |  image_links    |
+| 7    |  intro    |
+| 8    |  keywords    |
+| 9    |  keywords_extracted    |
+| 10    |  lemmatizer    |
+| 11    |  links    |
+| 12    |  long_url    |
+| 13    |  news_site    |
+| 14    |  published_time   |
+| 15    |  read_time    |
+| 16    |  sentiments    |
+| 17    |  short_url    |
+| 18    |  text    |
+| 19    |  textsum    |
+| 20    |  title    |
 
 + _id                 = unique Hash to identify a single article 
 + authors             = an array containing the authors
 + crawl_time          = time-spamp informing when the article was crawled
 + description         = summery of the text, written by the author
++ departments         = theme based categorisation of the article
 + entities            = named entities and their predicted category (PERson, LOCation, ORGanisation, MISCellaneous)
 + image_links         = an array, containing the links of the images used in the article
 + intro               = introduction text 
